@@ -46,7 +46,9 @@ class P2PClient extends React.Component {
   
   connectServer = () => {
     //WebSocket连接url
-    var p2pUrl = 'wss://' + window.location.hostname + ':8000/ws';
+    //var p2pUrl = 'wss://' + window.location.hostname + ':8000/ws';
+    //var p2pUrl = 'wss://' + "192.168.0.104" + ':8000/ws';
+    var p2pUrl = 'wss://' + "120.55.163.162" + ':8000/ws';
     var turnUrl = 'https://' + window.location.hostname + ':9000/api/turn?service=turn&username=sample';
     console.log("信令服务器地址:" +p2pUrl);
     console.log("中转服务器地址:" +turnUrl);

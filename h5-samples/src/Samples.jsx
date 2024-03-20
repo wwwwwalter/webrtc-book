@@ -21,11 +21,14 @@ const data = [
   {title:'捕获Video作为媒体流示例',path:'/captureVideo'},
   {title:'捕获Canvas作为媒体流示例',path:'/captureCanvas'},
   {title:'RTCPeerConnection示例',path:'/peerConnection'},
+  {title:'RTCPeerConnectionA',path:'/PeerConnectionA'},
+  {title:'RTCPeerConnectionB',path:'/PeerConnectionB'},
   {title:'Video发送至远端示例',path:'/peerConnectionVideo'},
   {title:'电子白板同步示例',path:'/peerConnectionCanvas'},
   {title:'数据通道发送文本消息示例',path:'/dataChannel'},
   {title:'数据通道发送文件示例',path:'/dataChannelFile'},
   {title:'一对一视频通话示例',path:'/p2pClient'},
+  {title:'Server',path:'./server'},
 ];
 //示例组件
 class Samples extends React.Component {

@@ -50,5 +50,8 @@ module.exports = {
     hot: true,
     //加载IP地址
     host: 'localhost',
+    //端口号
+    port: 8080
+
   }
 };

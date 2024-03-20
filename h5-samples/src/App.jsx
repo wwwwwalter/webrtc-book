@@ -1,6 +1,8 @@
 import React from "react";
 import { HashRouter as Router,Route,} from 'react-router-dom';
 import PeerConnection from './PeerConnection';
+import PeerConnectionA from './PeerConnectionA';
+import PeerConnectionB from './PeerConnectionB';
 import DataChannel from './DataChannel';
 import Samples from './Samples';
 import Canvas from "./Canvas";
@@ -23,6 +25,7 @@ import CaptureCanvas from "./CaptureCanvas";
 import PeerConnectionVideo from "./PeerConnectionVideo";
 import PeerConnectionCanvas from "./PeerConnectionCanvas";
 import DataChannelFile from "./DataChannelFile";
+import Server from "./Server";
 
 //主组件
 class App extends React.Component {
@@ -50,11 +53,14 @@ class App extends React.Component {
                 <Route exact path="/captureCanvas" component={CaptureCanvas} />
                 <Route exact path="/recordVideo" component={RecordVideo} />
                 <Route exact path="/peerConnection" component={PeerConnection} />
+                <Route exact path="/peerConnectionA" component={PeerConnectionA} />
+                <Route exact path="/peerConnectionB" component={PeerConnectionB} />
                 <Route exact path="/peerConnectionVideo" component={PeerConnectionVideo} />
                 <Route exact path="/peerConnectionCanvas" component={PeerConnectionCanvas} />
                 <Route exact path="/dataChannel" component={DataChannel} />
                 <Route exact path="/dataChannelFile" component={DataChannelFile} />
                 <Route exact path="/p2pClient" component={P2PClient} />
+                <Route exact path="/Server" component={Server} />
             </div>
         </Router>
   }
