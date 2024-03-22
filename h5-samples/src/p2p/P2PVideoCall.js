@@ -1,11 +1,13 @@
 import * as events from 'events';
 import Axios from 'axios';
-//PeerConnection连接
-var RTCPeerConnection;
-//会话描述
-var RTCSessionDescription;
-//连接配置
+// //PeerConnection连接
+// var RTCPeerConnection;
+// //会话描述
+// var RTCSessionDescription;
+// //连接配置
 var configuration;
+// 创建一个空数组来存储RTCIceCandidate对象  
+let iceCandidatesArray = [];
 /**
  * 信令类
  */
@@ -32,24 +34,24 @@ export default class P2PVideoCall extends events.EventEmitter {
         //本地媒体流
         this.localStream;
 
-        //RTCPeerConnection兼容性处理
-        RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection || window.msRTCPeerConnection;
-        //RTCSessionDescription兼容性处理
-        RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription || window.webkitRTCSessionDescription || window.msRTCSessionDescription;
-        //getUserMedia兼容性处理
-        navigator.getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia || navigator.webkitGetUserMedia || navigator.msGetUserMedia;
+        // //RTCPeerConnection兼容性处理
+        // RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection || window.msRTCPeerConnection;
+        // //RTCSessionDescription兼容性处理
+        // RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription || window.webkitRTCSessionDescription || window.msRTCSessionDescription;
+        // //getUserMedia兼容性处理
+        // navigator.getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia || navigator.webkitGetUserMedia || navigator.msGetUserMedia;
 
         //ICE配置
         //configuration = { "iceServers": [{ "url": "stun:stun.l.google.com:19302" }] };
-        configuration = { "iceServers": [{ "urls": "stun:stun.gmx.net" }] };
-        // configuration = {
-        //     "iceServers": [
-        //         { "urls": "stun:stun.gmx.net" },
-        //         { "urls": "stun:stun.voipbuster.com" },
-        //         { "urls": "stun:stun.voipstunt.com" },
-        //         { "urls": "stun:stun.internetcalls.com" },
-        //         { "urls": "stun:stun.voip.aebc.com" },]
-        // };
+        //configuration = { "iceServers": [{ "urls": "stun:stun.gmx.net" }] };
+        configuration = {
+            "iceServers": [
+                { "urls": "stun:stun.gmx.net" },
+                { "urls": "stun:stun.voipbuster.com" },
+                { "urls": "stun:stun.voipstunt.com" },
+                { "urls": "stun:stun.internetcalls.com" },
+                { "urls": "stun:stun.voip.aebc.com" },]
+        };
 
 
         // //访问Turn中转服务器
@@ -425,9 +427,9 @@ export default class P2PVideoCall extends events.EventEmitter {
             //提议方设置远端描述信息SDP
             pc.setRemoteDescription(new RTCSessionDescription(data.description), () => {
                 //发起方收到answer设置完远端sdp，RTC握手就算完成了
-                console.log('pc setRemoteDescription', pc.remoteDescription)
+                console.log('pc setRemoteDescription', pc.remoteDescription);
             }, this.logError);
-            
+
         }
     }
 
@@ -437,17 +439,22 @@ export default class P2PVideoCall extends events.EventEmitter {
         var from = data.from;
         var pc = null;
         console.log(from)
+        let candidate = new RTCIceCandidate(data.candidate);
+        iceCandidatesArray.push(candidate);
         //根据对方Id找到PC对象
         if (from in this.peerConnections) {
             pc = this.peerConnections[from];
         }
-        else{
-            console.log(`未找到 ${from} 的peerconnect,还没有被创建出来`)
+        else {
+            console.log(`未找到 ${from} 的peerconnect,还没有被创建出来,先缓存起来`,candidate)
         }
         //添加Candidate到PC对象中
         if (pc && data.candidate) {
-            pc.addIceCandidate(new RTCIceCandidate(data.candidate));
-            console.log('pc addIceCandidate',data.candidate)
+            for(let i = 0;i<iceCandidatesArray.length;i++){
+                let candidate = iceCandidatesArray.shift()
+                pc.addIceCandidate(candidate);
+                console.log('pc addIceCandidate', candidate);
+            }
         }
     }
 
@@ -483,14 +490,14 @@ export default class P2PVideoCall extends events.EventEmitter {
             console.log("关闭视频");
             pc1.close();
             delete peerConnections[ids[0]];
-            console.log('删除连接:',ids[0])
+            console.log('删除连接:', ids[0])
         }
         //关闭pc2
         if (pc2 !== undefined) {
             console.log("关闭视频");
             pc2.close();
             delete peerConnections[ids[1]];
-            console.log('删除连接：',ids[1])
+            console.log('删除连接：', ids[1])
         }
         //关闭媒体流
         if (this.localStream != null) {
