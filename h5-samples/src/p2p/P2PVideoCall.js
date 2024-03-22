@@ -41,14 +41,15 @@ export default class P2PVideoCall extends events.EventEmitter {
 
         //ICE配置
         //configuration = { "iceServers": [{ "url": "stun:stun.l.google.com:19302" }] };
-        configuration = {
-            "iceServers": [
-                { "url": "stun:stun.gmx.net" },
-                { "url": "stun:stun.voipbuster.com" },
-                { "url": "stun:stun.voipstunt.com" },
-                { "url": "stun:stun.internetcalls.com" },
-                { "url": "stun:stun.voip.aebc.com" },]
-        };
+        configuration = { "iceServers": [{ "urls": "stun:stun.gmx.net" }] };
+        // configuration = {
+        //     "iceServers": [
+        //         { "urls": "stun:stun.gmx.net" },
+        //         { "urls": "stun:stun.voipbuster.com" },
+        //         { "urls": "stun:stun.voipstunt.com" },
+        //         { "urls": "stun:stun.internetcalls.com" },
+        //         { "urls": "stun:stun.voip.aebc.com" },]
+        // };
 
 
         // //访问Turn中转服务器
