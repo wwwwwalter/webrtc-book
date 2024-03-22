@@ -227,10 +227,11 @@ export default class P2PVideoCall extends events.EventEmitter {
     createOffer = (pc, id, media) => {
         //创建提议
         pc.createOffer((desc) => {
-            console.log('createOffer: ', desc.sdp);
+            //console.log('createOffer: ', desc.sdp);
+            console.log('pc createOffer', desc);
             //设置本地描述
             pc.setLocalDescription(desc, () => {
-                console.log('setLocalDescription', pc.localDescription);
+                console.log('pc setLocalDescription', pc.localDescription);
                 //消息
                 let message = {
                     //消息类型为offer
@@ -270,9 +271,10 @@ export default class P2PVideoCall extends events.EventEmitter {
         var pc = new RTCPeerConnection(configuration);
         //将PC对象放入集合里
         this.peerConnections["" + id] = pc;
+        console.log('put pc to peerConnections')
         //收集到Candidate数据
         pc.onicecandidate = (event) => {
-            console.log('onicecandidate', event);
+            console.log('pc onicecandidate', event);
             if (event.candidate) {
                 //消息
                 let message = {
@@ -302,30 +304,33 @@ export default class P2PVideoCall extends events.EventEmitter {
         };
 
         pc.onnegotiationneeded = () => {
-            console.log('onnegotiationneeded');
+            console.log('pc onnegotiationneeded');
         }
 
         pc.oniceconnectionstatechange = (event) => {
-            console.log('oniceconnectionstatechange', event);
+            console.log('pc oniceconnectionstatechange', event);
         };
         pc.onsignalingstatechange = (event) => {
-            console.log('onsignalingstatechange', event);
+            console.log('pc onsignalingstatechange', event);
         };
         //远端流到达
         pc.onaddstream = (event) => {
-            console.log('onaddstream', event);
+            console.log('***********************************************************');
+            console.log('pc onaddstream', event, event.stream);
             //通知应用层处理流
             this.emit('addstream', event.stream);
+            console.log('############################################################');
         };
         //远端流移除
         pc.onremovestream = (event) => {
-            console.log('onremovestream', event);
+            console.log('pc onremovestream', event, event.stream);
             //通知应用层移除流
             this.emit('removestream', event.stream);
         };
 
         //添加本地流至PC里
         pc.addStream(localstream);
+        console.log('pc addlocalstream', localstream)
         //如果是提议方创建Offer
         if (isOffer) {
             this.createOffer(pc, id, media);
@@ -367,13 +372,14 @@ export default class P2PVideoCall extends events.EventEmitter {
             if (pc && data.description) {
                 //应答方法设置远端会话描述SDP
                 pc.setRemoteDescription(new RTCSessionDescription(data.description), () => {
+                    console.log('pc setRemoteDescription', pc.remoteDescription)
                     if (pc.remoteDescription.type == "offer") {
                         //生成应答信息
                         pc.createAnswer((desc) => {
-                            console.log('createAnswer: ', desc);
+                            console.log('pc createAnswer: ', desc);
                             //应答方法设置本地会话描述SDP
                             pc.setLocalDescription(desc, () => {
-                                console.log('setLocalDescription', pc.localDescription);
+                                console.log('pc setLocalDescription', pc.localDescription);
                                 //消息
                                 let message = {
                                     //应答消息类型
@@ -417,7 +423,10 @@ export default class P2PVideoCall extends events.EventEmitter {
         if (pc && data.description) {
             //提议方设置远端描述信息SDP
             pc.setRemoteDescription(new RTCSessionDescription(data.description), () => {
+                //发起方收到answer设置完远端sdp，RTC握手就算完成了
+                console.log('pc setRemoteDescription', pc.remoteDescription)
             }, this.logError);
+            
         }
     }
 
@@ -426,6 +435,8 @@ export default class P2PVideoCall extends events.EventEmitter {
         var data = message.data;
         var from = data.from;
         var pc = null;
+        console.log(from)
+        console.log(this.peerConnections)
         //根据对方Id找到PC对象
         if (from in this.peerConnections) {
             pc = this.peerConnections[from];
@@ -433,6 +444,8 @@ export default class P2PVideoCall extends events.EventEmitter {
         //添加Candidate到PC对象中
         if (pc && data.candidate) {
             pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+            console.log('pc addIceCandidate',pc.RTCIceCandidate)
+            console.log('pc addIceCandidate',pc.candidate)
         }
     }
 
@@ -456,7 +469,7 @@ export default class P2PVideoCall extends events.EventEmitter {
     onHangUp = (message) => {
         var data = message.data;
         //sessionId是由自己和远端Id组成,使用下划线连接
-        var ids = data.sessionId.split('_');
+        var ids = data.sessionId.split('-');
         var to = data.to;
         console.log('挂断:sessionId:', data.sessionId);
         //取到两个PC对象
@@ -468,12 +481,14 @@ export default class P2PVideoCall extends events.EventEmitter {
             console.log("关闭视频");
             pc1.close();
             delete peerConnections[ids[0]];
+            console.log('删除连接:',ids[0])
         }
         //关闭pc2
         if (pc2 !== undefined) {
             console.log("关闭视频");
             pc2.close();
             delete peerConnections[ids[1]];
+            console.log('删除连接：',ids[1])
         }
         //关闭媒体流
         if (this.localStream != null) {
