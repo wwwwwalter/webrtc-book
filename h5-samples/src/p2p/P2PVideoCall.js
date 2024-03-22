@@ -436,16 +436,17 @@ export default class P2PVideoCall extends events.EventEmitter {
         var from = data.from;
         var pc = null;
         console.log(from)
-        console.log(this.peerConnections)
         //根据对方Id找到PC对象
         if (from in this.peerConnections) {
             pc = this.peerConnections[from];
         }
+        else{
+            console.log(`未找到 ${from} 的peerconnect,还没有被创建出来`)
+        }
         //添加Candidate到PC对象中
         if (pc && data.candidate) {
             pc.addIceCandidate(new RTCIceCandidate(data.candidate));
-            console.log('pc addIceCandidate',pc.RTCIceCandidate)
-            console.log('pc addIceCandidate',pc.candidate)
+            console.log('pc addIceCandidate',data.candidate)
         }
     }
 
