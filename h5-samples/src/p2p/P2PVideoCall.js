@@ -43,15 +43,15 @@ export default class P2PVideoCall extends events.EventEmitter {
 
         //ICE配置
         //configuration = { "iceServers": [{ "url": "stun:stun.l.google.com:19302" }] };
-        //configuration = { "iceServers": [{ "urls": "stun:stun.gmx.net" }] };
-        configuration = {
-            "iceServers": [
-                { "urls": "stun:stun.gmx.net" },
-                { "urls": "stun:stun.voipbuster.com" },
-                { "urls": "stun:stun.voipstunt.com" },
-                { "urls": "stun:stun.internetcalls.com" },
-                { "urls": "stun:stun.voip.aebc.com" },]
-        };
+        configuration = { "iceServers": [{ "urls": "stun:stun.gmx.net" }, { "urls": "stun:stun.voipbuster.com" }] };
+        // configuration = {
+        //     "iceServers": [
+        //         { "urls": "stun:stun.gmx.net" },
+        //         { "urls": "stun:stun.voipbuster.com" },
+        //         { "urls": "stun:stun.voipstunt.com" },
+        //         { "urls": "stun:stun.internetcalls.com" },
+        //         { "urls": "stun:stun.voip.aebc.com" },]
+        // };
 
 
         // //访问Turn中转服务器
@@ -269,7 +269,7 @@ export default class P2PVideoCall extends events.EventEmitter {
      * localstream:本地媒体流
      */
     createPeerConnection = (id, media, isOffer, localstream) => {
-        console.log("创建PeerConnection...");
+        console.log("创建PeerConnection");
         //创建连接对象
         var pc = new RTCPeerConnection(configuration);
         //将PC对象放入集合里
@@ -376,6 +376,13 @@ export default class P2PVideoCall extends events.EventEmitter {
                 //应答方法设置远端会话描述SDP
                 pc.setRemoteDescription(new RTCSessionDescription(data.description), () => {
                     console.log('pc setRemoteDescription', pc.remoteDescription)
+                    //将应答端之前收到的ICE缓存信息添加到pc中
+                    while (iceCandidatesArray.length > 0) {
+                        let candidate = iceCandidatesArray.shift()
+                        pc.addIceCandidate(candidate);
+                        console.log('pc addIceCandidate', candidate);
+                    }
+
                     if (pc.remoteDescription.type == "offer") {
                         //生成应答信息
                         pc.createAnswer((desc) => {
@@ -439,6 +446,7 @@ export default class P2PVideoCall extends events.EventEmitter {
         var from = data.from;
         var pc = null;
         console.log(from)
+        //将应答端提前收到的ICE信息缓存到数组里
         let candidate = new RTCIceCandidate(data.candidate);
         iceCandidatesArray.push(candidate);
         //根据对方Id找到PC对象
@@ -446,11 +454,11 @@ export default class P2PVideoCall extends events.EventEmitter {
             pc = this.peerConnections[from];
         }
         else {
-            console.log(`未找到 ${from} 的peerconnect,还没有被创建出来,先缓存起来`,candidate)
+            console.log(`未找到 ${from} 的peerconnect,还没有被创建出来,先缓存起来`, candidate)
         }
         //添加Candidate到PC对象中
         if (pc && data.candidate) {
-            for(let i = 0;i<iceCandidatesArray.length;i++){
+            while (iceCandidatesArray.length > 0) {
                 let candidate = iceCandidatesArray.shift()
                 pc.addIceCandidate(candidate);
                 console.log('pc addIceCandidate', candidate);
