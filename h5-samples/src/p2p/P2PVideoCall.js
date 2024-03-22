@@ -142,7 +142,7 @@ export default class P2PVideoCall extends events.EventEmitter {
     getLocalStream = (type) => {
         return new Promise((pResolve, pReject) => {
             //设置约束条件
-            var constraints = { audio: true, video: (type === 'video') ? { width: 1280, height: 720 } : false };
+            var constraints = { audio: true, video: (type === 'video') ? { width: 1920, height: 1080 } : false };
             //屏幕类型
             if (type == 'screen') {
                 //调用getDisplayMedia接口获取桌面流
