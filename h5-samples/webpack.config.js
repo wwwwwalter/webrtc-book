@@ -49,7 +49,7 @@ module.exports = {
     //是否热加载
     hot: true,
     //加载IP地址
-    host: 'localhost',
+    host: '0.0.0.0',
     //端口号
     port: 8080
 

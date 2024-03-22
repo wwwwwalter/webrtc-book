@@ -26,13 +26,13 @@ class P2PClient extends React.Component {
       //自己Id
       userId: null,
       //用户名
-      userName:'',
+      userName: '',
       //房间号
-      roomId:'111111',
+      roomId: '111111',
       //是否正在视频通话
       isVideoCall: false,
       //是否登录房间
-      isLogin:false,
+      isLogin: false,
       //本地流
       localStream: null,
       //远端流
@@ -43,21 +43,21 @@ class P2PClient extends React.Component {
       videoMuted: false,
     };
   }
-  
+
   connectServer = () => {
     //WebSocket连接url
     //var p2pUrl = 'wss://' + window.location.hostname + ':8000/ws';
     //var p2pUrl = 'wss://' + "192.168.0.104" + ':8000/ws';
     var p2pUrl = 'wss://' + "120.55.163.162" + ':8000/ws';
     var turnUrl = 'https://' + window.location.hostname + ':9000/api/turn?service=turn&username=sample';
-    console.log("信令服务器地址:" +p2pUrl);
-    console.log("中转服务器地址:" +turnUrl);
+    console.log("信令服务器地址:" + p2pUrl);
+    console.log("中转服务器地址:" + turnUrl);
     //初始化信令 传入url及名称
-    this.p2pVideoCall = new P2PVideoCall(p2pUrl,turnUrl,this.state.userName,this.state.roomId);
+    this.p2pVideoCall = new P2PVideoCall(p2pUrl, turnUrl, this.state.userName, this.state.roomId);
     //监听更新用户列表事件
     this.p2pVideoCall.on('updateUserList', (users, self) => {
-      this.setState({ 
-        users:users, 
+      this.setState({
+        users: users,
         userId: self,
       });
     });
@@ -79,10 +79,10 @@ class P2PClient extends React.Component {
     });
     //监听会话结束事件
     this.p2pVideoCall.on('hangUp', (to, session) => {
-      this.setState({ 
-        isVideoCall: false, 
-        localStream: null, 
-        remoteStream: null 
+      this.setState({
+        isVideoCall: false,
+        localStream: null,
+        remoteStream: null
       });
     });
     //监听离开事件
@@ -90,12 +90,12 @@ class P2PClient extends React.Component {
       this.setState({ isVideoCall: false, localStream: null, remoteStream: null });
     });
   }
-  
+
   //呼叫对方参与会话
   handleStartCall = (remoteUserId, type) => {
     this.p2pVideoCall.startCall(remoteUserId, type);
   }
-  
+
   //挂断处理
   handleUp = () => {
     this.p2pVideoCall.hangUp();
@@ -125,31 +125,31 @@ class P2PClient extends React.Component {
 
   //打开/关闭本地音频
   onAudioClickHandler = () => {
-        let audioMuted = !this.state.audioMuted;
-        this.onToggleLocalAudioTrack(audioMuted);
-        this.setState({audioMuted:audioMuted});
-    }
-
-  onToggleLocalAudioTrack = (muted) => {
-      //获取所有音频轨道
-      var audioTracks = this.state.localStream.getAudioTracks();
-      if(audioTracks.length === 0){
-          console.log("没有本地音频");
-          return;
-      }
-      console.log("打开/关闭本地音频.");
-      //循环迭代所有轨道
-      for(var i = 0; i<audioTracks.length; ++i){
-          //设置每个轨道的enabled值
-          audioTracks[i].enabled = !muted;
-      }
+    let audioMuted = !this.state.audioMuted;
+    this.onToggleLocalAudioTrack(audioMuted);
+    this.setState({ audioMuted: audioMuted });
   }
 
-  loginHandler = (userName,roomId) =>{
+  onToggleLocalAudioTrack = (muted) => {
+    //获取所有音频轨道
+    var audioTracks = this.state.localStream.getAudioTracks();
+    if (audioTracks.length === 0) {
+      console.log("没有本地音频");
+      return;
+    }
+    console.log("打开/关闭本地音频.");
+    //循环迭代所有轨道
+    for (var i = 0; i < audioTracks.length; ++i) {
+      //设置每个轨道的enabled值
+      audioTracks[i].enabled = !muted;
+    }
+  }
+
+  loginHandler = (userName, roomId) => {
     this.setState({
-      isLogin:true,
-      userName:userName,
-      roomId:roomId,
+      isLogin: true,
+      userName: userName,
+      roomId: roomId,
     });
     this.connectServer();
   }
@@ -161,63 +161,63 @@ class P2PClient extends React.Component {
         {!this.state.isLogin ?
           <div className="login-container">
             <h2>一对一视频通话案例</h2>
-            <P2PLogin loginHandler={this.loginHandler}/>
+            <P2PLogin loginHandler={this.loginHandler} />
           </div>
           :
           !this.state.isVideoCall ?
-          <List bordered header={"一对一视频通话案例"} footer={"终端列表(Web/Android/iOS)"}>
-            {
-              //迭代所有的用户
-              this.state.users.map((user, i) => {
-                return (
-                  <List.Item key={user.id}>
-                    <div className="list-item">
-                      {user.name + user.id}
-                      {user.id !== this.state.userId &&
-                        <div>
-                          <Button type="link"  onClick={() => this.handleStartCall(user.id, 'video')}>视频</Button>
-                          <Button type="link"  onClick={() => this.handleStartCall(user.id, 'screen')}>共享桌面</Button>
-                        </div>
-                      }
-                    </div>
-                  </List.Item>
-                )
-              })
-            }
-          </List>
-          :
-          <div>
+            <List bordered header={"一对一视频通话案例"} footer={"终端列表(Web/Android/iOS)"}>
+              {
+                //迭代所有的用户
+                this.state.users.map((user, i) => {
+                  return (
+                    <List.Item key={user.id}>
+                      <div className="list-item">
+                        {user.name + user.id}
+                        {user.id !== this.state.userId &&
+                          <div>
+                            <Button type="link" onClick={() => this.handleStartCall(user.id, 'video')}>视频</Button>
+                            <Button type="link" onClick={() => this.handleStartCall(user.id, 'screen')}>共享桌面</Button>
+                          </div>
+                        }
+                      </div>
+                    </List.Item>
+                  )
+                })
+              }
+            </List>
+            :
             <div>
-              {
-                //渲染本地视频
-                this.state.remoteStream != null ? <RemoteVideoView stream={this.state.remoteStream} id={'remoteview'} /> : null
-              }
-              {
-                //渲染远端视频
-                this.state.localStream != null ? <LocalVideoView stream={this.state.localStream} muted={this.state.videoMuted} id={'localview'} /> : null
-              }
+              <div>
+                {
+                  //渲染远端视频
+                  this.state.remoteStream != null ? <RemoteVideoView stream={this.state.remoteStream} id={'remoteview'} /> : null
+                }
+                {
+                  //渲染本地视频
+                  this.state.localStream != null ? <LocalVideoView stream={this.state.localStream} muted={this.state.videoMuted} id={'localview'} /> : null
+                }
+              </div>
+              <div className="btn-tools">
+                {/* 打开/关闭视频 */}
+                <Button className="button" ghost size="large" shape="circle"
+                  icon={this.state.videoMuted ? <VideocamOffIcon /> : <VideoIcon />}
+                  onClick={this.onVideoOnClickHandler}
+                >
+                </Button>
+                {/* 挂断 */}
+                <Button className="button" ghost size="large" shape="circle"
+                  icon={<HangupIcon />}
+                  onClick={this.handleUp}
+                >
+                </Button>
+                {/* 打开/关闭音频 */}
+                <Button ghost size="large" shape="circle"
+                  icon={this.state.audioMuted ? <MicrophoneOffIcon /> : <MicrophoneIcon />}
+                  onClick={this.onAudioClickHandler}
+                >
+                </Button>
+              </div>
             </div>
-            <div className="btn-tools">
-              {/* 打开/关闭视频 */}
-              <Button className="button" ghost size="large" shape="circle"
-                icon={this.state.videoMuted ? <VideocamOffIcon /> : <VideoIcon />}
-                onClick={this.onVideoOnClickHandler}
-              >
-              </Button>
-              {/* 挂断 */}
-              <Button className="button" ghost size="large" shape="circle"
-                icon={<HangupIcon />}
-                onClick={this.handleUp}
-              >
-              </Button>
-              {/* 打开/关闭音频 */}
-              <Button ghost size="large" shape="circle"
-                icon={this.state.audioMuted ? <MicrophoneOffIcon /> : <MicrophoneIcon />}
-                onClick={this.onAudioClickHandler}
-              >
-              </Button>
-            </div>
-          </div>
         }
       </div>
     );
