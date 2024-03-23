@@ -49,7 +49,7 @@ class P2PClient extends React.Component {
     //var p2pUrl = 'wss://' + window.location.hostname + ':8000/ws';
     //var p2pUrl = 'wss://' + "192.168.0.104" + ':8000/ws';
     var p2pUrl = 'wss://' + "120.55.163.162" + ':8000/ws';
-    var turnUrl = 'https://' + window.location.hostname + ':9000/api/turn?service=turn&username=sample';
+    var turnUrl = 'https://' + "120.55.163.162" + ':9000/api/turn?service=turn&username=sample';
     console.log("信令服务器地址:" + p2pUrl);
     console.log("中转服务器地址:" + turnUrl);
     //初始化信令 传入url及名称

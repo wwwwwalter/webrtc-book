@@ -58,21 +58,23 @@ export default class P2PVideoCall extends events.EventEmitter {
 
 
         // //访问Turn中转服务器
-        // Axios.get(this.turnUrl, {}).then(res => {
-        //     if(res.status === 200){
-        //         let _turnCredential = res.data;
-        //         configuration = { "iceServers": [
-        //             { 
-        //                 "url":  _turnCredential['uris'][0],
-        //                 'username': _turnCredential['username'],
-        //                 'credential': _turnCredential['password']
-        //             }
-        //         ]};
-        //         console.log("configuration:" + JSON.stringify(configuration));
-        //     }
-        // }).catch((error)=>{
-        //     console.log('网络错误:请求不到TurnServer服务器');
-        // });
+        Axios.get(this.turnUrl, {}).then(res => {
+            if (res.status === 200) {
+                let _turnCredential = res.data;
+                configuration = {
+                    "iceServers": [
+                        {
+                            "url": _turnCredential['uris'][0],
+                            'username': _turnCredential['username'],
+                            'credential': _turnCredential['password']
+                        }
+                    ]
+                };
+                console.log("configuration:" + JSON.stringify(configuration));
+            }
+        }).catch((error) => {
+            console.log('网络错误:请求不到TurnServer服务器');
+        });
 
         //初始化WebSocket
         this.socket = new WebSocket(this.p2pUrl);
