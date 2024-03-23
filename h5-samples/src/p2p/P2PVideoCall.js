@@ -1,5 +1,6 @@
 import * as events from 'events';
 import Axios from 'axios';
+import { parse } from 'path';
 // //PeerConnection连接
 // var RTCPeerConnection;
 // //会话描述
@@ -44,7 +45,7 @@ export default class P2PVideoCall extends events.EventEmitter {
         //ICE配置
         //configuration = { "iceServers": [{ "url": "stun:stun.l.google.com:19302" }] };
         //configuration = { "iceServers": [{ "urls": "stun:stun.gmx.net" }]};
-        configuration = { "iceServers": [{ "urls": "stun:stun.voipbuster.com" }]};
+        configuration = { "iceServers": [{ "urls": "stun:stun.voipbuster.com" }] };
         //configuration = { "iceServers": [{ "urls": "stun:stun.gmx.net" }, { "urls": "stun:stun.voipbuster.com" }] };
         // configuration = {
         //     "iceServers": [
@@ -118,7 +119,10 @@ export default class P2PVideoCall extends events.EventEmitter {
                     this.onUpdateUserList(parsedMessage);
                     break;
                 case 'leaveRoom':
-                    this.onLeave(parsedMessage);
+                    this.onLeaveRoom(parsedMessage);
+                    break;
+                case 'quitRoom':
+                    this.onQuitRoom(parsedMessage)
                     break;
                 case 'hangUp':
                     this.onHangUp(parsedMessage);
@@ -132,11 +136,11 @@ export default class P2PVideoCall extends events.EventEmitter {
         };
         //Socket连接错误
         this.socket.onerror = (e) => {
-            console.log('onerror::' + e.data);
+            console.log('onerror::' + e);
         }
         //Socket连接关闭
         this.socket.onclose = (e) => {
-            console.log('onclose::' + e.data);
+            console.log('onclose::' + e);
         }
     }
 
@@ -221,6 +225,24 @@ export default class P2PVideoCall extends events.EventEmitter {
         }
         //发送消息
         this.send(message);
+    }
+
+    //退出房间处理
+    quitRoom = () => {
+        //定义消息
+        let message = {
+            //消息类型
+            type: 'quitRoom',
+            //数据
+            data: {
+                //消息发送者
+                from: this.userId,
+                //房间Id
+                roomId: this.roomId
+            }
+        }
+        //发送消息
+        this.send(message)
     }
 
     /**
@@ -489,7 +511,8 @@ export default class P2PVideoCall extends events.EventEmitter {
         }
     }
 
-    onLeave = (message) => {
+    //对方意外中断P2P连接处理
+    onLeaveRoom = (message) => {
         var id = message.data;
         console.log('leave', id);
         var peerConnections = this.peerConnections;
@@ -503,6 +526,13 @@ export default class P2PVideoCall extends events.EventEmitter {
             this.closeMediaStream(this.localStream);
             this.localStream = null;
         }
+        this.emit('leaveRoom')
+    }
+
+    //自己退出房间处理
+    onQuitRoom = (message) => {
+        //通知上层媒体层更新界面
+        this.emit('quitRoom')
     }
 
     //挂断处理
@@ -555,5 +585,26 @@ export default class P2PVideoCall extends events.EventEmitter {
         for (let i = 0, len = tracks.length; i < len; i++) {
             tracks[i].stop();
         }
+    }
+
+
+    //析构p2pVideoCall实例
+    dispose() {
+        if (this.socket) {
+            //正常关闭websocket
+            this.socket.close(1000, "quitRoom");
+            this.socket = null;
+        }
+        //关闭媒体流
+        if (this.localStream) {
+            //获取所有的轨道
+            let tracks = this.localStream.getTracks();
+            //循环迭代所有轨道并停止
+            for (let i = 0, len = tracks.length; i < len; i++) {
+                tracks[i].stop();
+            }
+            this.localStream = null;
+        }
+        console.log('P2PVideoCall disposed');
     }
 }

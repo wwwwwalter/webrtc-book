@@ -79,16 +79,24 @@ class P2PClient extends React.Component {
     });
     //监听会话结束事件
     this.p2pVideoCall.on('hangUp', (to, session) => {
-      this.setState({
-        isVideoCall: false,
-        localStream: null,
-        remoteStream: null
-      });
-    });
-    //监听离开事件
-    this.p2pVideoCall.on('leave', (to) => {
       this.setState({ isVideoCall: false, localStream: null, remoteStream: null });
     });
+    //监听远端意外离开事件
+    this.p2pVideoCall.on('leaveRoom', (to) => {
+      this.setState({ isVideoCall: false, localStream: null, remoteStream: null });
+    });
+    //监听本地退出房间事件
+    this.p2pVideoCall.on('quitRoom', () => {
+      //删除本次p2pVideoCall属性实例
+      this.p2pVideoCall.dispose();
+      this.p2pVideoCall = null;
+      //恢复默认值
+      this.setState({
+        isLogin: false,
+        users: [], userId: null, userName: '', roomId: '1', isVideoCall: false,
+        localStorage: null, remoteStream: null, audioMuted: false, videoMuted: false
+      });
+    })
   }
 
   //呼叫对方参与会话
@@ -99,6 +107,11 @@ class P2PClient extends React.Component {
   //挂断处理
   handleUp = () => {
     this.p2pVideoCall.hangUp();
+  }
+
+  //退出房间处理
+  handleQuitRoom = () => {
+    this.p2pVideoCall.quitRoom();
   }
 
   //打开/关闭本地视频
@@ -177,6 +190,11 @@ class P2PClient extends React.Component {
                           <div>
                             <Button type="link" onClick={() => this.handleStartCall(user.id, 'video')}>视频</Button>
                             <Button type="link" onClick={() => this.handleStartCall(user.id, 'screen')}>共享桌面</Button>
+                          </div>
+                        }
+                        {user.id === this.state.userId &&
+                          <div>
+                            <Button type="link" onClick={() => this.handleQuitRoom()}>退出房间</Button>
                           </div>
                         }
                       </div>
