@@ -373,10 +373,10 @@ export default class P2PVideoCall extends events.EventEmitter {
             var pc = this.createPeerConnection(from, media, false, stream);
 
             if (pc && data.description) {
+                console.log('pc setRemoteDescription', pc.remoteDescription);
                 //应答方法设置远端会话描述SDP
                 pc.setRemoteDescription(new RTCSessionDescription(data.description), () => {
-                    console.log('pc setRemoteDescription', pc.remoteDescription)
-                    //将应答端之前收到的ICE缓存信息添加到pc中
+                    //应答端设置过远端dsp后将应答端之前收到的ICE缓存信息添加到pc中
                     while (iceCandidatesArray.length > 0) {
                         let candidate = iceCandidatesArray.shift()
                         pc.addIceCandidate(candidate);
@@ -431,12 +431,11 @@ export default class P2PVideoCall extends events.EventEmitter {
             pc = this.peerConnections[from];
         }
         if (pc && data.description) {
+            //发起方收到answer设置完远端sdp，RTC握手就算完成了
+            console.log('pc setRemoteDescription', pc.remoteDescription);
             //提议方设置远端描述信息SDP
             pc.setRemoteDescription(new RTCSessionDescription(data.description), () => {
-                //发起方收到answer设置完远端sdp，RTC握手就算完成了
-                console.log('pc setRemoteDescription', pc.remoteDescription);
             }, this.logError);
-
         }
     }
 
