@@ -43,7 +43,9 @@ export default class P2PVideoCall extends events.EventEmitter {
 
         //ICE配置
         //configuration = { "iceServers": [{ "url": "stun:stun.l.google.com:19302" }] };
-        configuration = { "iceServers": [{ "urls": "stun:stun.gmx.net" }, { "urls": "stun:stun.voipbuster.com" }] };
+        //configuration = { "iceServers": [{ "urls": "stun:stun.gmx.net" }]};
+        configuration = { "iceServers": [{ "urls": "stun:stun.voipbuster.com" }]};
+        //configuration = { "iceServers": [{ "urls": "stun:stun.gmx.net" }, { "urls": "stun:stun.voipbuster.com" }] };
         // configuration = {
         //     "iceServers": [
         //         { "urls": "stun:stun.gmx.net" },
