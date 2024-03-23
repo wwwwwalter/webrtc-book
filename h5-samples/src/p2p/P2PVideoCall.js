@@ -364,58 +364,77 @@ export default class P2PVideoCall extends events.EventEmitter {
         this.emit('newCall', from, this.sessionId);
 
         //应答方获取本地媒体流
-        this.getLocalStream(media).then((stream) => {
-            //获取到本地媒体流
-            this.localStream = stream;
-            //通知应用层本地媒体流
-            this.emit('localstream', stream);
-            //应答方创建连接PeerConnection
-            var pc = this.createPeerConnection(from, media, false, stream);
+        this.getLocalStream(media)
+            .then((stream) => {
+                //获取到本地媒体流
+                this.localStream = stream;
+                //通知应用层本地媒体流
+                this.emit('localstream', stream);
+                //应答方创建连接PeerConnection
+                var pc = this.createPeerConnection(from, media, false, stream);
 
-            if (pc && data.description) {
-                console.log('pc setRemoteDescription', pc.remoteDescription);
-                //应答方法设置远端会话描述SDP
-                pc.setRemoteDescription(new RTCSessionDescription(data.description), () => {
-                    //应答端设置过远端dsp后将应答端之前收到的ICE缓存信息添加到pc中
-                    while (iceCandidatesArray.length > 0) {
-                        let candidate = iceCandidatesArray.shift()
-                        pc.addIceCandidate(candidate);
-                        console.log('pc addIceCandidate', candidate);
-                    }
-
-                    if (pc.remoteDescription.type == "offer") {
-                        //生成应答信息
-                        pc.createAnswer((desc) => {
-                            console.log('pc createAnswer: ', desc);
-                            //应答方法设置本地会话描述SDP
-                            pc.setLocalDescription(desc, () => {
-                                console.log('pc setLocalDescription', pc.localDescription);
-                                //消息
-                                let message = {
-                                    //应答消息类型
-                                    type: 'answer',
-                                    //数据
-                                    data: {
-                                        //对方Id
-                                        to: from,
-                                        //自己Id
-                                        from: this.userId,
-                                        //SDP信息
-                                        description: { 'sdp': desc.sdp, 'type': desc.type },
-                                        //会话Id
-                                        sessionId: this.sessionId,
-                                        //房间Id
-                                        roomId: this.roomId,
-                                    }
-                                };
-                                //发送消息
-                                this.send(message);
-                            }, this.logError);
-                        }, this.logError);
-                    }
-                }, this.logError);
-            }
-        });
+                if (pc && data.description) {
+                    console.log('pc setRemoteDescription', pc.remoteDescription);
+                    //应答方法设置远端会话描述SDP
+                    pc.setRemoteDescription(new RTCSessionDescription(data.description))
+                        .then(() => {
+                            // 应答方设置远端描述成功后，添加之前收到的 ICE 候选者  
+                            while (iceCandidatesArray.length > 0) {
+                                const candidate = iceCandidatesArray.shift();
+                                pc.addIceCandidate(candidate)
+                                    .catch((error) => {
+                                        console.error('Failed to add ICE candidate:', error);
+                                    });
+                                console.log('pc addIceCandidate', candidate);
+                            }
+                            // 如果远端描述是 offer，则创建并发送 answer  
+                            if (pc.remoteDescription.type === "offer") {
+                                return pc.createAnswer();
+                            }
+                        })
+                        .then((desc) => {
+                            if (!desc) {
+                                return; // 如果远端描述不是 offer，则直接返回  
+                            }
+                            console.log('pc createAnswer:', desc);
+                            // 设置本地会话描述 SDP  
+                            return pc.setLocalDescription(desc);
+                        })
+                        .then(() => {
+                            if (!pc.localDescription || pc.localDescription.type !== "answer") {
+                                return; // 如果没有本地描述或类型不是 answer，则直接返回  
+                            }
+                            console.log('pc setLocalDescription', pc.localDescription);
+                            // 构造并发送 answer 消息  
+                            const message = {
+                                //应答消息类型
+                                type: 'answer',
+                                //数据
+                                data: {
+                                    //对方Id
+                                    to: from,
+                                    //自己Id
+                                    from: this.userId,
+                                    //SDP信息
+                                    description: { sdp: pc.localDescription.sdp, type: pc.localDescription.type },
+                                    //会话ID
+                                    sessionId: this.sessionId,
+                                    //房间Id
+                                    roomId: this.roomId,
+                                }
+                            };
+                            // 发送消息  
+                            this.send(message);
+                        })
+                        .catch((error) => {
+                            // 任何步骤出错都会进入这里  
+                            this.logError;
+                        });
+                }
+            })
+            .catch((error) => {
+                this.logError;
+            });
     }
 
     //应答方发过来的Answer处理
@@ -434,8 +453,11 @@ export default class P2PVideoCall extends events.EventEmitter {
             //发起方收到answer设置完远端sdp，RTC握手就算完成了
             console.log('pc setRemoteDescription', pc.remoteDescription);
             //提议方设置远端描述信息SDP
-            pc.setRemoteDescription(new RTCSessionDescription(data.description), () => {
-            }, this.logError);
+            pc.setRemoteDescription(new RTCSessionDescription(data.description))
+                .then(() => { })
+                .catch((error) => {
+                    console.error('logError:', error);
+                });
         }
     }
 
