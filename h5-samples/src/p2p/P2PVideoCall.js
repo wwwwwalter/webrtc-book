@@ -45,7 +45,7 @@ export default class P2PVideoCall extends events.EventEmitter {
         //ICE配置
         //configuration = { "iceServers": [{ "url": "stun:stun.l.google.com:19302" }] };
         //configuration = { "iceServers": [{ "urls": "stun:stun.gmx.net" }]};
-        configuration = { "iceServers": [{ "urls": "stun:stun.voipbuster.com" }] };
+        //configuration = { "iceServers": [{ "urls": "stun:stun.voipbuster.com" }] };
         //configuration = { "iceServers": [{ "urls": "stun:stun.gmx.net" }, { "urls": "stun:stun.voipbuster.com" }] };
         // configuration = {
         //     "iceServers": [
@@ -55,22 +55,22 @@ export default class P2PVideoCall extends events.EventEmitter {
         //         { "urls": "stun:stun.internetcalls.com" },
         //         { "urls": "stun:stun.voip.aebc.com" },]
         // };
-
-
-        // //访问Turn中转服务器
+        //STUN服务器
+        const stunServers = { urls: "stun:stun.voipbuster.com" };
+        configuration = { iceServers: [stunServers] };
+        //访问Turn中转服务器
         Axios.get(this.turnUrl, {}).then(res => {
+            //如果服务器正常返回
             if (res.status === 200) {
                 let _turnCredential = res.data;
-                configuration = {
-                    "iceServers": [
-                        {
-                            "url": _turnCredential['uris'][0],
-                            'username': _turnCredential['username'],
-                            'credential': _turnCredential['password']
-                        }
-                    ]
+                const turnServer = {
+                    urls: _turnCredential['uris'][0],
+                    username: _turnCredential['username'],
+                    credential: _turnCredential['password']
                 };
-                console.log("configuration:" + JSON.stringify(configuration));
+                //如果访问成功，把TurnServer也添加到ICEServers里
+                configuration = { iceServers: [stunServers, turnServer] };
+                //console.log("TurnServer服务器:" + JSON.stringify(turnServer));
             }
         }).catch((error) => {
             console.log('网络错误:请求不到TurnServer服务器');
@@ -297,6 +297,9 @@ export default class P2PVideoCall extends events.EventEmitter {
     createPeerConnection = (id, media, isOffer, localstream) => {
         console.log("创建PeerConnection");
         //创建连接对象
+        console.log("###############################");
+        console.log(configuration)
+        console.log("###############################");
         var pc = new RTCPeerConnection(configuration);
         //将PC对象放入集合里
         this.peerConnections["" + id] = pc;
