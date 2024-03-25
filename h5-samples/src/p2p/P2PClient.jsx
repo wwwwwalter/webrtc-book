@@ -52,10 +52,16 @@ class P2PClient extends React.Component {
     //var p2pUrl = 'wss://' + "120.55.163.162" + ':8000/ws';
     //var turnUrl = 'https://' + "120.55.163.162" + ':9000/api/turn?service=turn&username=sample';
     //Aliyun(4G)
-    var p2pUrl = 'wss://' + "106.14.40.95" + ':8000/ws';
-    var turnUrl = 'https://' + "106.14.40.95" + ':9000/api/turn?service=turn&username=sample';
+    // var p2pUrl = 'wss://' + "106.14.40.95" + ':8000/ws';
+    // var turnUrl = 'https://' + "106.14.40.95" + ':9000/api/turn?service=turn&username=sample';
+    // console.log("信令服务器地址:" + p2pUrl);
+    // console.log("中转服务器地址:" + turnUrl);
+    //Aliyun(2G3M)
+    var p2pUrl = 'wss://' + "101.132.39.118" + ':8000/ws';
+    var turnUrl = 'https://' + "101.132.39.118" + ':9000/api/turn?service=turn&username=sample';
     console.log("信令服务器地址:" + p2pUrl);
     console.log("中转服务器地址:" + turnUrl);
+
     //初始化信令 传入url及名称
     this.p2pVideoCall = new P2PVideoCall(p2pUrl, turnUrl, this.state.userName, this.state.roomId);
     //监听更新用户列表事件
