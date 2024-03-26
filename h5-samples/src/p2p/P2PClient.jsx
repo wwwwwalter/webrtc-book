@@ -57,8 +57,8 @@ class P2PClient extends React.Component {
     // console.log("信令服务器地址:" + p2pUrl);
     // console.log("中转服务器地址:" + turnUrl);
     //Aliyun(2G3M)
-    var p2pUrl = 'wss://' + "101.132.39.118" + ':8000/ws';
-    var turnUrl = 'https://' + "101.132.39.118" + ':9000/api/turn?service=turn&username=sample';
+    var p2pUrl = 'wss://' + "101.132.39.118" + ':443/ws';
+    var turnUrl = 'https://' + "101.132.39.118" + ':3478/api/turn?service=turn&username=sample';
     console.log("信令服务器地址:" + p2pUrl);
     console.log("中转服务器地址:" + turnUrl);
 
