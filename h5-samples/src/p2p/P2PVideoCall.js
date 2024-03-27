@@ -137,12 +137,12 @@ export default class P2PVideoCall extends events.EventEmitter {
             }
         };
         //Socket连接错误
-        this.socket.onerror = (e) => {
-            console.log('onerror::' + e);
+        this.socket.onerror = (error) => {
+            console.log('WebSocket connection error:',error);
         }
         //Socket连接关闭
-        this.socket.onclose = (e) => {
-            console.log('onclose::' + e);
+        this.socket.onclose = (event) => {
+            console.log('WebSocket connection closed:',event.code,event.reason);
         }
     }
 
