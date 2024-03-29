@@ -1,0 +1,101 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>WebSocket 调试助手</title>  
+    <style>  
+        body {  
+            font-family: Arial, sans-serif;  
+            margin: 20px;  
+        }  
+        textarea {  
+            width: 100%;  
+            height: 100px;  
+            margin-bottom: 10px;  
+        }  
+        #message-log {  
+            border: 1px solid #ccc;  
+            padding: 10px;  
+            height: 300px;  
+            overflow-y: scroll;  
+            margin-bottom: 10px;  
+        }  
+        button {  
+            padding: 5px 10px;  
+        }  
+    </style>  
+</head>  
+<body>  
+    <h1>WebSocket 调试助手</h1>  
+    <label for="ws-url">WebSocket URL:</label>  
+    <input type="text" id="ws-url" placeholder="Enter WebSocket URL">  
+    <button onclick="connect()">连接</button>  
+    <button onclick="disconnect()" disabled>断开连接</button>  
+    <textarea id="message-input" placeholder="Enter message to send"></textarea>  
+    <button onclick="sendMessage()">发送消息</button>  
+    <div id="message-log"></div>  
+  
+    <script>  
+        let ws = null;  
+        const messageLog = document.getElementById('message-log');  
+        const connectButton = document.querySelector('button[onclick="connect()"]');  
+        const disconnectButton = document.querySelector('button[onclick="disconnect()"]');  
+        const messageInput = document.getElementById('message-input');  
+  
+        function connect() {  
+            const url = document.getElementById('ws-url').value;  
+            try {  
+                ws = new WebSocket(url);  
+                ws.onopen = () => {  
+                    connectButton.disabled = true;  
+                    disconnectButton.disabled = false;  
+                    logMessage('已连接到WebSocket服务器');  
+                };  
+                ws.onmessage = (event) => {  
+                    logMessage(`收到消息: ${event.data}`);  
+                };  
+                ws.onerror = (error) => {  
+                    logMessage(`WebSocket错误: ${error.message}`);  
+                };  
+                ws.onclose = (event) => {  
+                    if (event.wasClean) {  
+                        logMessage(`WebSocket连接已关闭，代码: ${event.code} 原因: ${event.reason}`);  
+                    } else {  
+                        logMessage('WebSocket连接意外关闭');  
+                    }  
+                    connectButton.disabled = false;  
+                    disconnectButton.disabled = true;  
+                    ws = null;  
+                };  
+            } catch (error) {  
+                logMessage(`无法连接到WebSocket服务器: ${error.message}`);  
+            }  
+        }  
+  
+        function disconnect() {  
+            if (ws) {  
+                ws.close();  
+            }  
+        }  
+  
+        function sendMessage() {  
+            if (ws && ws.readyState === WebSocket.OPEN) {  
+                const message = messageInput.value;  
+                ws.send(message);  
+                logMessage(`已发送消息: ${message}`);  
+                messageInput.value = '';  
+            } else {  
+                logMessage('WebSocket连接未打开，无法发送消息');  
+            }  
+        }  
+  
+        function logMessage(message) {  
+            const p = document.createElement('p');  
+            p.textContent = `${new Date().toISOString()} - ${message}`;  
+            messageLog.appendChild(p);  
+            messageLog.scrollTop = messageLog.scrollHeight;  
+        }  
+    </script>  
+</body>  
+</html>
